@@ -1,0 +1,20 @@
+.funkiller{
+    font-size: 16px;
+    font-weight: 400;
+
+}
+.oje{
+    border: 0.9px solid lightgray;
+    width: 100%;
+    text-align: center;
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.ewow{
+  border: 1px solid lightgray;
+   padding: 10px;
+ border-radius: 5px;
+}

@@ -1,0 +1,66 @@
+body{
+   background-color: #F3F3F1 !important; 
+}
+.addstuff{
+ display: flex;
+ /* justify-content: center; */
+
+}
+
+@media screen and (max-width:991px){
+    .fivz{
+ display: none;
+
+}
+}
+
+.addstuff2{
+ display: flex;
+ justify-content: center;
+    border-left: 1px solid rgba(0, 0, 0, 0.37);
+}
+.pine{
+    display: flex;
+
+}
+.omohh{
+    margin-top: -0px;
+}
+
+
+
+.PhoneInputInput{
+    height: 40px;
+width: 300px;
+outline: none;
+border: none;
+    background-color: rgb(253, 253, 253);
+margin-bottom: 5px;
+margin-top: 5px;
+margin-right: 5px;
+border-radius: none;
+}
+.wow{
+    background-color: rgb(253, 253, 253);
+    padding: 0 0 0 5px;
+    border-radius: 6px;
+    border: 0.5px solid black;
+}
+
+.PhoneInputCountry {
+border-right: 1px solid rgb(0, 0, 0);
+width: 44px;
+
+}
+.wow5{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    /* align-items: center; */
+    margin-top: 50px;
+}
+        
+.same{
+text-align: start;
+
+}

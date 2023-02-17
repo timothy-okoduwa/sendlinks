@@ -1,0 +1,76 @@
+.blip{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+.at{
+    margin-top: 25px;
+    font-weight: bold;
+    font-size: 22px;
+}
+.cardsHolder{
+        display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+.pin{
+    width: 60% ;
+    height: 65px;
+cursor: pointer;
+  transition: all 0.2s ease-in;
+  transform: scale(1);
+  background-color: white !important;
+  border-radius: 8px;
+  text-decoration: none;
+ /* display: flex;
+ justify-content: space-between;
+ align-items: center; */
+}
+.bsc{
+    font-size: 20px;
+    color: black;
+    opacity: 0.2;
+}
+
+.pin:hover, .bsc:hover{
+  transform: scale(1.02);
+  opacity: 1;
+}
+
+@media screen and (max-width:991px){
+    .pin{
+    width: 100% !important;
+}
+}
+.three{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+}
+.morelike{
+    display:flex;
+    justify-content: center;
+    margin-top: 120px;
+    font-size: 26px;
+    cursor: pointer;
+    font-weight: bold;
+         color: black;
+}
+.bs{
+    font-size: 30px;
+     color: black;
+}
+
+.okef{
+    font-size: 18px;
+    color:black;
+}
+.worksd{
+        display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    text-decoration: none;
+}

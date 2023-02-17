@@ -1,0 +1,36 @@
+.mainFormHolder{
+    padding-top: 60px;
+    padding-bottom: 60px;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+.log{
+    text-align: center;
+    font-size: 35px;
+    font-weight: 600;
+}
+.dont{
+     text-align: center;
+      font-size: 18px;
+    font-weight: 400;
+}
+.link{
+    width: 100%;
+    object-fit: cover;
+       height: 120vh;
+}
+.ok{
+    height: 120vh;
+}
+
+@media screen and (max-width:991px){
+    .ok{
+    display: none;
+}
+.mainFormHolder{
+    padding-top: 30px;
+    padding-bottom: 60px;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+}
