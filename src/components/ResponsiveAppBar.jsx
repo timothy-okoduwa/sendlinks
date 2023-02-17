@@ -242,13 +242,13 @@ style={{display:'flex',flexWrap:'wrap'}}
                     <div className="d-flex align-items-center">
                       <div>
                         <span className="" style={{opacity:'0.4'}}>
-                          {`https://sendlinks.netlify.app/share/${user.fullName}`}{' '}
+                          {`https://sendlinks.vercel.app/share/${user.fullName}`}{' '}
                         </span>{' '}
                       </div>
                       <div>
                         {' '}
                         <CopyToClipboard
-                          text={`https://sendlinks.netlify.app/share/${user.fullName}`}
+                          text={`https://sendlinks.vercel.app/share/${user.fullName}`}
                         >
                           <span className=" ewow mx-2">
                             copy Link
