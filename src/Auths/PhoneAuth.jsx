@@ -85,7 +85,11 @@ function setUpRecaptha(number) {
   authInstance.setPersistence(browserSessionPersistence);
   const recaptchaVerifier = new RecaptchaVerifier(
     'recaptcha-container',
-    {},
+    {
+      size: 'invisible',
+      siteKey: '6LdvO5skAAAAAMCyh7vpFAhCI0XDOLPPkuqK0BBG',
+      secretKey: '6LdvO5skAAAAABceHCEVUqQz0CEVgfhntr5iyxXg',
+    },
     authInstance
   );
   recaptchaVerifier.render();
