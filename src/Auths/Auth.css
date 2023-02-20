@@ -34,3 +34,28 @@
     padding-right: 30px;
 }
 }
+
+
+.PhoneInputInput{
+    height: 40px;
+width: 300px;
+outline: none;
+border: none;
+    background-color: #F3F3F1 !important;
+margin-bottom: 5px;
+margin-top: 5px;
+margin-right: 5px;
+border-radius: none;
+}
+.wow{
+    background-color: #F3F3F1 !important;
+    padding: 0 0 0 5px;
+    border-radius: 6px;
+    border: 0.5px solid black;
+}
+
+.PhoneInputCountry {
+border-right: 1px solid rgb(0, 0, 0);
+width: 44px;
+
+}

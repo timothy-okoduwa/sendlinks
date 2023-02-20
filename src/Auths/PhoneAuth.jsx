@@ -8,13 +8,21 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import InputAdornment from '@mui/material/InputAdornment';
 import FormControl from '@mui/material/FormControl';
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
 import TextField from '@mui/material/TextField';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { MuiOtpInput } from 'mui-one-time-password-input';
 import Alert from '@mui/material/Alert';
 import { GiPaperPlane } from 'react-icons/gi';
 import { FaOpencart } from 'react-icons/fa';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import {
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  getAuth,
+  browserSessionPersistence,
+} from 'firebase/auth';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate, Link } from 'react-router-dom';
 import { auth, db } from '../firebase';
@@ -22,11 +30,25 @@ import { setDoc, doc, Timestamp } from 'firebase/firestore';
 import Collapse from '@mui/material/Collapse';
 import CloseIcon from '@mui/icons-material/Close';
 // import { FormHelperText } from '@mui/material';
-import PhoneAuth from './PhoneAuth'
-const SignUp = () => {
+
+const PhoneAuth = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const [open, setOpen] = React.useState(true);
+  const [result, setResult] = useState('');
+  const [otp, setOtp] = React.useState('');
+  const [error, setError] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+  const [data, setData] = useState({
+    businessName: '',
+    password: '',
+    loading: false,
+  });
+
+
+  const handleChange2 = (newValue) => {
+    setOtp(newValue);
+  };
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -40,15 +62,66 @@ const SignUp = () => {
     };
   }, []);
   const navigate = useNavigate();
-  const [data, setData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    error: null,
-    loading: false,
-  });
+
   //destructuring from the state
-  const { fullName, email, password, error, loading } = data;
+  const { businessName,  password, loading } = data;
+
+function setUpRecaptha(number) {
+  const authInstance = getAuth();
+  authInstance.setPersistence(browserSessionPersistence);
+  const recaptchaVerifier = new RecaptchaVerifier(
+    'recaptcha-container',
+    {},
+    authInstance
+  );
+  recaptchaVerifier.render();
+  return signInWithPhoneNumber(authInstance, number, recaptchaVerifier);
+}
+
+  const getOtp = async () => {
+    console.log(phoneNumber);
+    setError('');
+    console.log(error);
+    if (phoneNumber === '' || phoneNumber === undefined)
+      return setError('Please enter a valid phone number!');
+    try {
+      const response = await setUpRecaptha(phoneNumber);
+      setResult(response);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const verifyOtp = async () => {
+    setData({ ...data, error: null, loading: true });
+    setError('');
+    if (otp === '' || otp === null) return;
+    if (!businessName || !phoneNumber || !password || !otp) {
+      setData({ ...data, error: 'All documents are needed to Fly' });
+    }
+    try {
+      await result.confirm(otp);
+      await setDoc(doc(db, 'admin', auth?.currentUser?.uid), {
+        uid: auth?.currentUser?.uid,
+        businessName,
+        phoneNumber,
+        password,
+        otp,
+        createdAt: Timestamp.fromDate(new Date()),
+      });
+      setData({
+        businessName: '',
+        phoneNumber: '',
+        password: '',
+        error: null,
+        loading: false,
+        otp: '',
+      });
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const handleChange = (e) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -59,35 +132,8 @@ const SignUp = () => {
 
     setData({ ...data, error: null, loading: true });
     //setting an error if the fields are empty
-    if (!fullName || !email || !password) {
+    if (!businessName || !phoneNumber || !password || !otp) {
       setData({ ...data, error: 'All documents are needed to Fly' });
-    }
-
-    //writing the firebase create function
-    try {
-      const result = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      //passing our register credentials to our database storage
-      await setDoc(doc(db, 'admin', result.user.uid), {
-        uid: result.user.uid,
-        fullName,
-        email,
-        password,
-        createdAt: Timestamp.fromDate(new Date()),
-      });
-      setData({
-        fullName: '',
-        email: '',
-        password: '',
-        error: null,
-        loading: false,
-      });
-      navigate('/');
-    } catch (err) {
-      setData({ ...data, error: err.message, loading: false });
     }
   };
 
@@ -138,36 +184,69 @@ const SignUp = () => {
                   <div className="mt-5">
                     <TextField
                       id="outlined-basic"
-                      label="Full Name"
+                      label="Business Name"
                       variant="outlined"
                       style={{ width: '100%' }}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            sendlinks.com/
-                          </InputAdornment>
-                        ),
-                      }}
-                      name="fullName"
-                      value={fullName}
+                      name="businessName"
+                      value={businessName}
                       onChange={handleChange}
                       // FormHelperText="hello"
-                      helperText="Do not put space in your names"
+                      helperText="Do not put space in your Business names"
                       required
                     />
                   </div>
-                  <div className="mt-5">
-                    <TextField
-                      id="outlined-basic"
-                      label="Email"
-                      variant="outlined"
-                      style={{ width: '100%' }}
-                      name="email"
-                      value={email}
-                      onChange={handleChange}
-                      helperText="Email must be Valid"
-                      required
-                    />
+                  <div>
+                    <div>
+                      <div>
+                        <div className="mt-5">
+                          <PhoneInput
+                            defaultCountry="NG"
+                            value={phoneNumber}
+                            onChange={setPhoneNumber}
+                            placeholder="Enter Phone Number"
+                            className="px-3 wow"
+                          />
+                          <span
+                            style={{
+                              fontSize: '12px',
+                              color: '#90908F',
+                              paddingLeft: '18px',
+                              marginBottom: '8px',
+                            }}
+                          >{`sendlinks.com/${phoneNumber}`}</span>
+                        </div>
+                        <div id="recaptcha-container"></div>
+                      </div>
+                      <div
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
+                      >
+                        <Button variant="outlined" onClick={getOtp}>
+                          Request OTP
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <div>
+                        <div className="mt-4">
+                          <div
+                            style={{
+                              fontSize: '12px',
+                              color: '#90908F',
+                              paddingLeft: '18px',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            Please enter the OTP sent to your Number
+                          </div>
+                          <MuiOtpInput
+                            length={6}
+                            value={otp}
+                            onChange={handleChange2}
+                          />
+                        </div>
+                      </div>
+                      {/* <div>4</div> */}
+                    </div>
                   </div>
                   <div>
                     <FormControl
@@ -218,9 +297,11 @@ const SignUp = () => {
                     style={{ width: '200px', height: '45px' }}
                     type="submit"
                     onClick={() => {
-                      handleSubmit();
+                      verifyOtp();
                     }}
-                    disabled={loading || !fullName || !email || !password}
+                    disabled={
+                      loading || !businessName || !phoneNumber || !password
+                    }
                   >
                     {loading ? (
                       <CircularProgress
@@ -251,8 +332,7 @@ const SignUp = () => {
           </div>
         </div>
       </div>
-      <PhoneAuth/>
     </div>
   );
 };
-export default SignUp;
+export default PhoneAuth;
