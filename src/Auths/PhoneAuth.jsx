@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import './Auth.css';
 import l from './image/Linktree.png';
 import IconButton from '@mui/material/IconButton';
@@ -26,9 +26,20 @@ import {
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate, Link } from 'react-router-dom';
 import { auth, db } from '../firebase';
-import { setDoc, doc, Timestamp } from 'firebase/firestore';
+// import { setDoc, doc, Timestamp } from 'firebase/firestore';
+  import {
+    collection,
+    query,
+    where,
+    getDocs,
+    getDoc,
+    setDoc,
+    doc,
+    Timestamp,
+  } from 'firebase/firestore';
 import Collapse from '@mui/material/Collapse';
 import CloseIcon from '@mui/icons-material/Close';
+import ImprovedAuth from './ImprovedAuth';
 // import { FormHelperText } from '@mui/material';
 
 const PhoneAuth = () => {
@@ -37,10 +48,13 @@ const PhoneAuth = () => {
   const [open, setOpen] = React.useState(true);
   const [result, setResult] = useState('');
   const [otp, setOtp] = React.useState('');
+    const [flag, setFlag] = useState(false);
   const [error, setError] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
+      const [businessName, setBusinessName] = useState('');
+const [businessNameExists, setBusinessNameExists] = useState(false);
   const [data, setData] = useState({
-    businessName: '',
+ 
     password: '',
     loading: false,
   });
@@ -64,7 +78,7 @@ const PhoneAuth = () => {
   const navigate = useNavigate();
 
   //destructuring from the state
-  const { businessName,  password, loading } = data;
+  const {   password, loading } = data;
 
 function setUpRecaptha(number) {
   const authInstance = getAuth();
@@ -87,10 +101,61 @@ function setUpRecaptha(number) {
     try {
       const response = await setUpRecaptha(phoneNumber);
       setResult(response);
+         setFlag(true);
     } catch (err) {
       setError(err.message);
     }
   };
+
+  // const verifyOtp = async () => {
+  //   setData({ ...data, error: null, loading: true });
+  //   setError('');
+  //   if (otp === '' || otp === null) return;
+  //   if (!businessName || !phoneNumber || !password || !otp) {
+  //     setData({ ...data, error: 'All documents are needed to Fly' });
+  //   }
+  //   try {
+  //     await result.confirm(otp);
+  //     await setDoc(doc(db, 'admin', auth?.currentUser?.uid), {
+  //       uid: auth?.currentUser?.uid,
+  //       businessName,
+  //       phoneNumber,
+  //       password,
+  //       otp,
+  //       createdAt: Timestamp.fromDate(new Date()),
+  //     });
+  //     setData({
+  //       businessName: '',
+  //       phoneNumber: '',
+  //       password: '',
+  //       error: null,
+  //       loading: false,
+  //       otp: '',
+  //     });
+  //     navigate('/');
+  //   } catch (err) {
+  //     setError(err.message);
+  //   }
+  // };
+   useEffect(() => {
+     async function checkBusinessNameExists() {
+       const querySnapshot = await getDocs(
+         query(
+           collection(db, 'admin'),
+           where('businessName', '==', businessName)
+         )
+       );
+       setBusinessNameExists(!querySnapshot.empty);
+     }
+     if (businessName) {
+       checkBusinessNameExists();
+     }
+   }, [businessName]);
+
+   function handleBusinessNameChange(event) {
+     setBusinessName(event.target.value);
+   }
+
 
   const verifyOtp = async () => {
     setData({ ...data, error: null, loading: true });
@@ -99,6 +164,18 @@ function setUpRecaptha(number) {
     if (!businessName || !phoneNumber || !password || !otp) {
       setData({ ...data, error: 'All documents are needed to Fly' });
     }
+
+    // Check if the business name already exists
+    const q = query(
+      collection(db, 'admin'),
+      where('businessName', '==', businessName)
+    );
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      setData({ ...data, error: 'Business name already exists' });
+      return;
+    }
+
     try {
       await result.confirm(otp);
       await setDoc(doc(db, 'admin', auth?.currentUser?.uid), {
@@ -119,9 +196,10 @@ function setUpRecaptha(number) {
       });
       navigate('/');
     } catch (err) {
-      setError(err.message);
+      setError(err.Message);
     }
   };
+
 
   const handleChange = (e) => {
     setData({ ...data, [e.target.name]: e.target.value });
@@ -145,7 +223,7 @@ function setUpRecaptha(number) {
 
   return (
     <div>
-      <div className="containerr">
+      <div className="container-xxl">
         <div className="row">
           <div className="col-12 col-lg-8">
             <div className="mainFormHolder">
@@ -189,65 +267,27 @@ function setUpRecaptha(number) {
                       style={{ width: '100%' }}
                       name="businessName"
                       value={businessName}
-                      onChange={handleChange}
+                      onChange={handleBusinessNameChange}
                       // FormHelperText="hello"
+
                       helperText="Do not put space in your Business names"
                       required
                     />
                   </div>
-                  <div>
-                    <div>
-                      <div>
-                        <div className="mt-5">
-                          <PhoneInput
-                            defaultCountry="NG"
-                            value={phoneNumber}
-                            onChange={setPhoneNumber}
-                            placeholder="Enter Phone Number"
-                            className="px-3 wow"
-                          />
-                          <span
-                            style={{
-                              fontSize: '12px',
-                              color: '#90908F',
-                              paddingLeft: '18px',
-                              marginBottom: '8px',
-                            }}
-                          >{`sendlinks.com/${phoneNumber}`}</span>
-                        </div>
-                        <div id="recaptcha-container"></div>
-                      </div>
-                      <div
-                        style={{ display: 'flex', justifyContent: 'flex-end' }}
-                      >
-                        <Button variant="outlined" onClick={getOtp}>
-                          Request OTP
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <div>
-                        <div className="mt-4">
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#90908F',
-                              paddingLeft: '18px',
-                              marginBottom: '8px',
-                            }}
-                          >
-                            Please enter the OTP sent to your Number
-                          </div>
-                          <MuiOtpInput
-                            length={6}
-                            value={otp}
-                            onChange={handleChange2}
-                          />
-                        </div>
-                      </div>
-                      {/* <div>4</div> */}
-                    </div>
-                  </div>
+                  {businessNameExists && (
+                    <p
+                      style={{
+                        fontSize: '12px',
+                        color: '#ff0000',
+                        paddingLeft: '18px',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      An account with <b>{businessName}</b> already exists. Please choose a
+                      different Business name.
+                    </p>
+                  )}
+
                   <div>
                     <FormControl
                       style={{ width: '100%' }}
@@ -284,6 +324,60 @@ function setUpRecaptha(number) {
                         helperText="Trust us,confidentiality is our watch Word "
                       />
                     </FormControl>
+                  </div>
+                  <div>
+                    <div style={{ display: !flag ? 'block' : 'none' }}>
+                      <div>
+                        <div className="mt-5">
+                          <PhoneInput
+                            defaultCountry="NG"
+                            value={phoneNumber}
+                            onChange={setPhoneNumber}
+                            placeholder="Enter Phone Number"
+                            className="px-3 wow"
+                            required
+                          />
+                          <span
+                            style={{
+                              fontSize: '12px',
+                              color: '#90908F',
+                              paddingLeft: '18px',
+                              marginBottom: '8px',
+                            }}
+                          >{`sendlinks.com/${phoneNumber}`}</span>
+                        </div>
+                        <div id="recaptcha-container"></div>
+                      </div>
+                      <div
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
+                      >
+                        <Button variant="outlined" onClick={getOtp}>
+                          Request OTP
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ display: flag ? 'block' : 'none' }}>
+                        <div className="mt-4">
+                          <div
+                            style={{
+                              fontSize: '12px',
+                              color: '#90908F',
+                              paddingLeft: '18px',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            Please enter the OTP sent to your Number
+                          </div>
+                          <MuiOtpInput
+                            length={6}
+                            value={otp}
+                            onChange={handleChange2}
+                          />
+                        </div>
+                      </div>
+                      {/* <div>4</div> */}
+                    </div>
                   </div>
                 </div>
 
@@ -327,11 +421,13 @@ function setUpRecaptha(number) {
           </div>
           <div className="col-12 col-lg-4 ok ">
             <div>
-              <img src={l} alt="wow" className="link" />
+              {/* <img src={l} alt="wow" className="link" /> */}
+              {/* hfhdhd */}
             </div>
           </div>
         </div>
       </div>
+      {/* <ImprovedAuth /> */}
     </div>
   );
 };

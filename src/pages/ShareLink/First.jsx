@@ -27,13 +27,13 @@ const First = () => {
 
    return unsubscribe;
  }, []);
-  return user? (
+  return user ? (
     <div>
       <div className=" pt-5 blip">
-        <Tooltip title={user.fullName}>
+        <Tooltip title={user.businessName}>
           <IconButton sx={{ p: 0 }}>
             <Avatar
-              alt={user.fullName}
+              alt={user.businessName}
               src="/static/images/avatar/1.jpg"
               style={{
                 height: '80px',
@@ -44,10 +44,10 @@ const First = () => {
             />
           </IconButton>
         </Tooltip>
-        <div className="at">@{user.fullName}</div>
+        <div className="at">@{user.businessName}</div>
       </div>
     </div>
-  ):null;
+  ) : null;
 };
 
 export default First;

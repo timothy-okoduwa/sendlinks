@@ -14,8 +14,9 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { db, auth } from '../firebase';
 import { getDoc, doc } from 'firebase/firestore';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { VscPreview } from 'react-icons/vsc';
+import {AiOutlineLogout} from 'react-icons/ai'
 import { FiSettings } from 'react-icons/fi';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import './Comp.css';
@@ -29,6 +30,11 @@ function ResponsiveAppBar() {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const [user, setUser] = useState();
+ const navigate = useNavigate();
+
+ const move=()=>{
+  navigate('/signin')
+ }
 
    const notify = () =>
      toast.success(' Copied!', {
@@ -193,15 +199,15 @@ function ResponsiveAppBar() {
                 <Typography textAlign="center">
                   <div className="funkiller d-flex align-items-center">
                     <Avatar
-                      alt={user.fullName}
+                      alt={user.businessName}
                       src="/static/images/avatar/1.jpg"
                     />
-                    <span className="mx-3">{user.email}</span>
+                    <span className="mx-3">{user.businessName}</span>
                   </div>
                 </Typography>
               </MenuItem>{' '}
               <Link
-                to={`share/${user.fullName}`}
+                to={`share/${user.businessName}`}
                 style={{ textDecoration: 'none', color: 'black' }}
               >
                 <MenuItem
@@ -229,30 +235,37 @@ function ResponsiveAppBar() {
                   </div>
                 </Typography>
               </MenuItem>
+              <MenuItem onClick={move} className="mt-4 pt-2 pb-2 ">
+                <Typography textAlign="center">
+                  <div className="funkiller d-flex align-items-center">
+                    <AiOutlineLogout style={{ fontSize: '35px' }} />
+                    <span className="mx-3">Log Out </span>
+                    {/* <span style={{ opacity: '0.4' }}>(coming soon)</span>{' '} */}
+                  </div>
+                </Typography>
+              </MenuItem>
               <MenuItem
                 onClick={() => {
                   notify();
                   handleCloseUserMenu();
                 }}
                 className="mt-4 pt-2 pb-2 "
-style={{display:'flex',flexWrap:'wrap'}}
+                style={{ display: 'flex', flexWrap: 'wrap' }}
               >
                 <Typography textAlign="center">
                   <div className="container oje">
                     <div className="d-flex align-items-center">
                       <div>
-                        <span className="" style={{opacity:'0.4'}}>
-                          {`https://sendlinks.vercel.app/share/${user.fullName}`}{' '}
+                        <span className="" style={{ opacity: '0.4' }}>
+                          {`https://sendlinks.vercel.app/share/${user.businessName}`}{' '}
                         </span>{' '}
                       </div>
                       <div>
                         {' '}
                         <CopyToClipboard
-                          text={`https://sendlinks.vercel.app/share/${user.fullName}`}
+                          text={`https://sendlinks.vercel.app/share/${user.businessName}`}
                         >
-                          <span className=" ewow mx-2">
-                            copy Link
-                          </span>
+                          <span className=" ewow mx-2">copy Link</span>
                         </CopyToClipboard>
                       </div>
                     </div>

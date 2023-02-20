@@ -8,21 +8,49 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import InputAdornment from '@mui/material/InputAdornment';
 import FormControl from '@mui/material/FormControl';
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
 import TextField from '@mui/material/TextField';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { FaOpencart } from 'react-icons/fa';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { MuiOtpInput } from 'mui-one-time-password-input';
 import Alert from '@mui/material/Alert';
+import { GiPaperPlane } from 'react-icons/gi';
+import { FaOpencart } from 'react-icons/fa';
+import {
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  getAuth,
+  browserSessionPersistence,
+} from 'firebase/auth';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useNavigate, Link } from 'react-router-dom';
 import { auth, db } from '../firebase';
-import { Link, useNavigate } from 'react-router-dom';
-import { doc, updateDoc } from 'firebase/firestore';
+import { setDoc, doc, Timestamp } from 'firebase/firestore';
 import Collapse from '@mui/material/Collapse';
 import CloseIcon from '@mui/icons-material/Close';
+import ImprovedAuth from './ImprovedAuth';
+// import { FormHelperText } from '@mui/material';
+
 const SignIn = () => {
+  const [showPassword, setShowPassword] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const [open, setOpen] = React.useState(true);
+  const [result, setResult] = useState('');
+  const [otp, setOtp] = React.useState('');
+  const [flag, setFlag] = useState(false);
+  const [error, setError] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [data, setData] = useState({
+    businessName: '',
+    password: '',
+    loading: false,
+  });
+
+  const handleChange2 = (newValue) => {
+    setOtp(newValue);
+  };
+
   React.useEffect(() => {
     const timer = setInterval(() => {
       setProgress((prevProgress) =>
@@ -34,48 +62,80 @@ const SignIn = () => {
       clearInterval(timer);
     };
   }, []);
-  const [showPassword, setShowPassword] = React.useState(false);
   const navigate = useNavigate();
-  //setting up the input
-  const [data, setData] = useState({
-    email: '',
-    password: '',
-    error: null,
-    loading: false,
-  });
-  //destructuring from the state
-  const { email, password, error, loading } = data;
 
-  //writitng the onchange function to target via name and then value
+  //destructuring from the state
+  const { businessName, password, loading } = data;
+
+  function setUpRecaptha(number) {
+    const authInstance = getAuth();
+    authInstance.setPersistence(browserSessionPersistence);
+    const recaptchaVerifier = new RecaptchaVerifier(
+      'recaptcha-container',
+      {},
+      authInstance
+    );
+    recaptchaVerifier.render();
+    return signInWithPhoneNumber(authInstance, number, recaptchaVerifier);
+  }
+
+  const getOtp = async () => {
+    console.log(phoneNumber);
+    setError('');
+    console.log(error);
+    if (phoneNumber === '' || phoneNumber === undefined)
+      return setError('Please enter a valid phone number!');
+    try {
+      const response = await setUpRecaptha(phoneNumber);
+      setResult(response);
+      setFlag(true);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const verifyOtp = async () => {
+    setData({ ...data, error: null, loading: true });
+    setError('');
+    if (otp === '' || otp === null) return;
+    if (!businessName || !phoneNumber || !password || !otp) {
+      setData({ ...data, error: 'All documents are needed to Fly' });
+    }
+    try {
+      await result.confirm(otp);
+      await setDoc(doc(db, 'admin', auth?.currentUser?.uid), {
+        uid: auth?.currentUser?.uid,
+        businessName,
+        phoneNumber,
+        password,
+        otp,
+        createdAt: Timestamp.fromDate(new Date()),
+      });
+      setData({
+        businessName: '',
+        phoneNumber: '',
+        password: '',
+        error: null,
+        loading: false,
+        otp: '',
+      });
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const handleChange = (e) => {
     setData({ ...data, [e.target.name]: e.target.value });
   };
   //writing the submit function
-  const handleSubmit = async (e) => {
+  const handleSubmit = async () => {
     // preventing the default behavour of the handle submit function (which is to refresh)
-    e.preventDefault();
+
     setData({ ...data, error: null, loading: true });
     //setting an error if the fields are empty
-    if (!email || !password) {
-      setData({ ...data, error: 'All fields are required' });
-    }
-
-    //writing the firebase create function
-    try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      //passing our register credentials to our database storage
-      await updateDoc(doc(db, 'admin', result.user.uid), {
-        isOnline: true,
-      });
-      setData({
-        email: '',
-        password: '',
-        error: null,
-        loading: false,
-      });
-      navigate('/');
-    } catch (err) {
-      setData({ ...data, error: err.message, loading: false });
+    if (!businessName || !phoneNumber || !password || !otp) {
+      setData({ ...data, error: 'All documents are needed to Fly' });
     }
   };
 
@@ -84,19 +144,22 @@ const SignIn = () => {
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
+
   return (
     <div>
-      <div className="containerr">
+      <div className="container-xxl">
         <div className="row">
           <div className="col-12 col-lg-8">
             <div className="mainFormHolder">
               <div>
+                {' '}
                 <FaOpencart style={{ fontSize: '45px' }} />
               </div>
               <div className="container mt-5">
                 <div className="log">
-                  We've Missed You Here @SendLinks <FaOpencart />
+                  We've Missed You Here @SendLinks <GiPaperPlane />
                 </div>
+
                 <div className="form mt-5">
                   {error ? (
                     <Collapse in={open}>
@@ -120,19 +183,74 @@ const SignIn = () => {
                       </Alert>
                     </Collapse>
                   ) : null}
-
-                  <div className="mt-5">
+                  {/* <div className="mt-5">
                     <TextField
                       id="outlined-basic"
-                      label="Email"
+                      label="Business Name"
                       variant="outlined"
                       style={{ width: '100%' }}
-                      name="email"
-                      value={email}
+                      name="businessName"
+                      value={businessName}
                       onChange={handleChange}
+                      // FormHelperText="hello"
+                      helperText="Do not put space in your Business names"
+                      required
                     />
-                  </div>
+                  </div> */}
                   <div>
+                    <div style={{ display: !flag ? 'block' : 'none' }}>
+                      <div>
+                        <div className="mt-5">
+                          <PhoneInput
+                            defaultCountry="NG"
+                            value={phoneNumber}
+                            onChange={setPhoneNumber}
+                            placeholder="Enter Phone Number"
+                            className="px-3 wow"
+                          />
+                          <span
+                            style={{
+                              fontSize: '12px',
+                              color: '#90908F',
+                              paddingLeft: '18px',
+                              marginBottom: '8px',
+                            }}
+                          >{`sendlinks.com/${phoneNumber}`}</span>
+                        </div>
+                        <div id="recaptcha-container"></div>
+                      </div>
+                      <div
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
+                      >
+                        <Button variant="outlined" onClick={getOtp}>
+                          Request OTP
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ display: flag ? 'block' : 'none' }}>
+                        <div className="mt-4">
+                          <div
+                            style={{
+                              fontSize: '12px',
+                              color: '#90908F',
+                              paddingLeft: '18px',
+                              marginBottom: '8px',
+                            }}
+                          >
+                            Please enter the OTP sent to your Number
+                          </div>
+                          <MuiOtpInput
+                            length={6}
+                            value={otp}
+                            onChange={handleChange2}
+                          />
+                        </div>
+                      </div>
+                      {/* <div>4</div> */}
+                    </div>
+                  </div>
+                  {/* <div>
                     <FormControl
                       style={{ width: '100%' }}
                       variant="outlined"
@@ -164,9 +282,11 @@ const SignIn = () => {
                           </InputAdornment>
                         }
                         label="Password"
+                        required
+                        helperText="Trust us,confidentiality is our watch Word "
                       />
                     </FormControl>
-                  </div>
+                  </div> */}
                 </div>
 
                 <Stack
@@ -177,8 +297,13 @@ const SignIn = () => {
                   <Button
                     variant="outlined"
                     style={{ width: '200px', height: '45px' }}
-                    onClick={handleSubmit}
-                    disabled={loading}
+                    type="submit"
+                    onClick={() => {
+                      verifyOtp();
+                    }}
+                    disabled={
+                      loading || !businessName || !phoneNumber || !password
+                    }
                   >
                     {loading ? (
                       <CircularProgress
@@ -187,7 +312,7 @@ const SignIn = () => {
                         style={{ width: '25px', height: '25px' }}
                       />
                     ) : (
-                      'Welcome Back'
+                      'Welcome Aboard'
                     )}
                   </Button>
                 </Stack>
@@ -202,13 +327,14 @@ const SignIn = () => {
               </div>
             </div>
           </div>
-          <div className="col-12 col-lg-4 ok">
+          <div className="col-12 col-lg-4 ok ">
             <div>
               <img src={l} alt="wow" className="link" />
             </div>
           </div>
         </div>
       </div>
+      {/* <ImprovedAuth /> */}
     </div>
   );
 };

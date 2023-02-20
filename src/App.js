@@ -8,6 +8,7 @@ import ProtectedRoute from './pages/AdminDashboard/ProtectedRoute';
 import ShareLink from './pages/ShareLink/ShareLink';
 import { db, auth } from './firebase';
 import { getDoc, doc,onSnapshot } from 'firebase/firestore';
+import PhoneAuth from './Auths/PhoneAuth';
 function App() {
   const [user, setUser] = useState(null);
 
@@ -38,18 +39,20 @@ useEffect(() => {
       <BrowserRouter>
         <Routes>
           <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/share/:fullName" element={<ShareLink user={user} />} />
-    
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              }
-            />
-  
+          <Route path="/signup" element={<PhoneAuth />} />
+          <Route
+            path="/share/:businessName"
+            element={<ShareLink user={user} />}
+          />
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </UserAuthContextProvider>

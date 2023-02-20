@@ -16,11 +16,18 @@
 }
 .link{
     width: 100%;
-    object-fit: cover;
-       height: 120vh;
+    object-fit: contain;
+       height: 100vh;
+       position: fixed;
 }
 .ok{
-    height: 120vh;
+      height: 100vh;
+       position: fixed;
+    width: 100%;
+    background-image: url('./image/Linktree.png');
+      object-fit: cover;
+      left: 70%;
+      background-repeat: no-repeat;
 }
 
 @media screen and (max-width:991px){
