@@ -88,7 +88,6 @@ function setUpRecaptha(number) {
     {
       size: 'invisible',
       siteKey: '6LdvO5skAAAAAMCyh7vpFAhCI0XDOLPPkuqK0BBG',
-      secretKey: '6LdvO5skAAAAABceHCEVUqQz0CEVgfhntr5iyxXg',
     },
     authInstance
   );
